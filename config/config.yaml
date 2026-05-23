@@ -56,6 +56,11 @@ setups:
     alert_cooldown_seconds: 60
     max_buy_alerts_per_day: 1
     max_sell_alerts_per_day: 1
+    # Send a single 🎯 "SETUP ARMED" notification when all 3 inside
+    # candles have confirmed. This fires at 09:35 IST (when the 09:30
+    # candle closes — the 3rd inside candle can only be evaluated then).
+    # Set to false to receive only the final BUY/SELL breakout alerts.
+    notify_armed: true
 
 # -------------------------------------------
 # Pattern Engine

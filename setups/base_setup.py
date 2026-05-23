@@ -11,13 +11,15 @@ can discover and instantiate it without any core engine changes.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
-from engines.alert_engine import AlertEngine
-from engines.state_engine import StateEngine
 from models.candle import Candle
 from models.signal import Signal
 from utils.logger import log
+
+if TYPE_CHECKING:
+    from engines.alert_engine import AlertEngine
+    from engines.state_engine import StateEngine
 
 
 SETUP_REGISTRY: Dict[str, Type["BaseSetup"]] = {}

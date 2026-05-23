@@ -92,13 +92,13 @@ Stock-Scanner-v2/
 git clone <your-fork-url> Stock-Scanner-v2
 cd Stock-Scanner-v2
 
-python3.11 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-Python **3.11+** is required.
+Python **3.14+** is required.
 
 ---
 
@@ -196,17 +196,17 @@ On startup the bot:
 
 ## 7. Telegram commands
 
-| Command | Description |
-|---|---|
-| `/start` | Welcome message |
-| `/help` | Full command list |
-| `/status` | WebSocket health, time since last tick, active items |
-| `/indices` | Show all configured indices and their state |
-| `/active_indices` | Only enabled indices |
-| `/active_setups` | Only enabled setups |
-| `/enable_setup <name>` | Enable a setup (e.g. `/enable_setup inside_candle`) |
-| `/disable_setup <name>` | Disable a setup |
-| `/reload_config` | Reload `config.yaml` without restarting |
+| Command                 | Description                                          |
+| ----------------------- | ---------------------------------------------------- |
+| `/start`                | Welcome message                                      |
+| `/help`                 | Full command list                                    |
+| `/status`               | WebSocket health, time since last tick, active items |
+| `/indices`              | Show all configured indices and their state          |
+| `/active_indices`       | Only enabled indices                                 |
+| `/active_setups`        | Only enabled setups                                  |
+| `/enable_setup <name>`  | Enable a setup (e.g. `/enable_setup inside_candle`)  |
+| `/disable_setup <name>` | Disable a setup                                      |
+| `/reload_config`        | Reload `config.yaml` without restarting              |
 
 ---
 
@@ -340,13 +340,13 @@ patterns:
 
 ## 13. Common issues
 
-| Symptom | Fix |
-|---|---|
-| `ModuleNotFoundError: SmartApi` | `pip install smartapi-python` |
-| `Login failed` | Re-verify API key, MPIN, and TOTP secret (it must be the **secret**, not a current code) |
-| `Telegram send failed: chat not found` | Start a chat with the bot, then re-run `/getUpdates` to fetch the right chat ID |
-| No alerts fire | Check `/status` — WebSocket connected? Last tick recent? Setup enabled? |
-| Stale state across days | The bot prunes state older than today on every boot — no action needed |
+| Symptom                                | Fix                                                                                      |
+| -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ModuleNotFoundError: SmartApi`        | `pip install smartapi-python`                                                            |
+| `Login failed`                         | Re-verify API key, MPIN, and TOTP secret (it must be the **secret**, not a current code) |
+| `Telegram send failed: chat not found` | Start a chat with the bot, then re-run `/getUpdates` to fetch the right chat ID          |
+| No alerts fire                         | Check `/status` — WebSocket connected? Last tick recent? Setup enabled?                  |
+| Stale state across days                | The bot prunes state older than today on every boot — no action needed                   |
 
 ---
 

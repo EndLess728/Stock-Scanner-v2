@@ -132,6 +132,42 @@ class AlertEngine:
             log.success(f"ALERT sent: {signal.dedup_key()} @ {signal.price}")
             return True
 
+    # ------------------------------------------------------------------
+    # Informational notifications (progress / armed / invalidated)
+    # ------------------------------------------------------------------
+    async def notify(
+        self,
+        text: str,
+        dedup_key: Optional[str] = None,
+        parse_mode: str = "Markdown",
+    ) -> bool:
+        """Broadcast an informational message.
+
+        - If `dedup_key` is provided, ensures the message is sent at most
+          once across restarts (uses the `alerts` table with
+          setup="__notification__").
+        - Otherwise, fires unconditionally.
+        """
+        async with self._lock:
+            if dedup_key is not None:
+                inserted = await self.db.insert_alert(
+                    dedup_key=dedup_key,
+                    setup="__notification__",
+                    index_name="",
+                    direction="INFO",
+                    price=0.0,
+                    payload={"text": text},
+                )
+                if not inserted:
+                    log.info(f"Duplicate notification suppressed: {dedup_key}")
+                    return False
+
+            payload = AlertPayload(text=text, parse_mode=parse_mode)
+            await self._rate_limit_wait()
+            await self._broadcast(payload)
+            log.success(f"NOTIFY sent: {dedup_key or '(no-key)'}")
+            return True
+
     async def _rate_limit_wait(self) -> None:
         """Cooperative rate-limit (per-minute global)."""
         from time import time
