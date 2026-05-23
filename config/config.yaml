@@ -1,0 +1,112 @@
+# =========================================================
+# Stock Scanner v2 - Runtime Configuration
+# =========================================================
+# This file controls market timings, active indices, setups,
+# pattern engine, telegram, and alert behavior.
+# Reload at runtime via /reload_config Telegram command.
+# =========================================================
+
+market:
+  timezone: "Asia/Kolkata"
+  open_time: "09:15"
+  close_time: "15:30"
+  pre_open_buffer_minutes: 2
+  trading_days: ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  holidays: []   # ISO dates e.g. "2026-01-26"
+
+# -------------------------------------------
+# Index Universe
+# -------------------------------------------
+indices:
+  NIFTY50:
+    enabled: true
+    exchange: "NSE"
+    symbol: "Nifty 50"
+    token: "99926000"        # Angel One token for NIFTY 50 spot index
+    exchange_type: 1         # 1 = NSE_CM
+    tick_size: 0.05
+  BANKNIFTY:
+    enabled: true
+    exchange: "NSE"
+    symbol: "Nifty Bank"
+    token: "99926009"        # Angel One token for BANKNIFTY spot index
+    exchange_type: 1
+    tick_size: 0.05
+
+# -------------------------------------------
+# Timeframes
+# -------------------------------------------
+timeframes:
+  default: "5min"
+  available: ["1min", "3min", "5min", "15min"]
+
+# -------------------------------------------
+# Setups Registry (auto-discovery in setups/)
+# -------------------------------------------
+setups:
+  inside_candle:
+    enabled: true
+    timeframe: "5min"
+    reference_candle: "09:15"
+    inside_candles:
+      - "09:20"
+      - "09:25"
+      - "09:30"
+    indices: ["NIFTY50", "BANKNIFTY"]
+    alert_cooldown_seconds: 60
+    max_buy_alerts_per_day: 1
+    max_sell_alerts_per_day: 1
+
+# -------------------------------------------
+# Pattern Engine
+# -------------------------------------------
+patterns:
+  enabled: false   # Master switch (future)
+  swing:
+    lookback: 20
+    sensitivity: 0.0015      # 0.15% min swing
+  head_and_shoulders:
+    enabled: false
+    symmetry_tolerance: 0.10
+    min_pattern_bars: 15
+  inverse_head_and_shoulders:
+    enabled: false
+    symmetry_tolerance: 0.10
+    min_pattern_bars: 15
+  m_pattern:
+    enabled: false
+    peak_tolerance: 0.005
+    min_pattern_bars: 10
+  w_pattern:
+    enabled: false
+    trough_tolerance: 0.005
+    min_pattern_bars: 10
+  parallel_channel:
+    enabled: false
+    min_touches: 3
+    parallel_tolerance: 0.10
+  fibonacci:
+    enabled: false
+    levels: [0.236, 0.382, 0.5, 0.618, 0.786]
+    extensions: [1.272, 1.414, 1.618, 2.0, 2.618]
+    rejection_tolerance: 0.001
+
+# -------------------------------------------
+# Telegram
+# -------------------------------------------
+telegram:
+  parse_mode: "Markdown"
+  send_startup_message: true
+  send_shutdown_message: true
+  rate_limit_per_minute: 20
+
+# -------------------------------------------
+# Logging
+# -------------------------------------------
+logging:
+  level: "INFO"
+  file: "logs/scanner.log"
+  rotation: "10 MB"
+  retention: "14 days"
+  backtrace: true
+  diagnose: false
