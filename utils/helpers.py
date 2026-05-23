@@ -1,4 +1,5 @@
 """Generic helpers."""
+
 from __future__ import annotations
 
 import asyncio
@@ -71,9 +72,7 @@ def async_retry(
                     return await func(*args, **kwargs)
                 except exceptions as exc:
                     last_exc = exc
-                    log.warning(
-                        f"{func.__name__} attempt {attempt}/{attempts} failed: {exc!r}"
-                    )
+                    log.warning(f"{func.__name__} attempt {attempt}/{attempts} failed: {exc!r}")
                     if attempt == attempts:
                         break
                     await asyncio.sleep(min(delay, max_delay))

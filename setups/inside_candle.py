@@ -22,6 +22,7 @@ Rules:
 - At most one BUY and one SELL per index per day (enforced by AlertEngine quotas).
 - State persisted via StateEngine; survives restarts.
 """
+
 from __future__ import annotations
 
 from datetime import timedelta

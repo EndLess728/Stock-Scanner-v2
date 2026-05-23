@@ -8,6 +8,7 @@ Every concrete setup MUST:
 Subclassing auto-registers the setup in `SETUP_REGISTRY` so the SetupEngine
 can discover and instantiate it without any core engine changes.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

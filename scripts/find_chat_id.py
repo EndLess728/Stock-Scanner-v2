@@ -8,6 +8,7 @@ Usage:
 For a group: add the bot to the group, send any message in the group,
 then run this script. Group IDs look like `-100123456789` (negative).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -55,7 +56,12 @@ async def main() -> int:
         if msg is None or msg.chat is None:
             continue
         chat = msg.chat
-        label = chat.title or " ".join(filter(None, [chat.first_name, chat.last_name])) or chat.username or ""
+        label = (
+            chat.title
+            or " ".join(filter(None, [chat.first_name, chat.last_name]))
+            or chat.username
+            or ""
+        )
         seen[chat.id] = f"{chat.type:<10} {label}".rstrip()
 
     print(f"Found {len(seen)} chat(s) that recently messaged this bot:\n")

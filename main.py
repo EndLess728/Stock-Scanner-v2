@@ -6,6 +6,7 @@ Wires:
   -> SetupEngine + PatternEngine -> MarketDataService
   -> TelegramBot
 """
+
 from __future__ import annotations
 
 import asyncio

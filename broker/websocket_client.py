@@ -7,6 +7,7 @@ Subscription mode 1 (LTP) is sufficient for index spot ticks.
 The SDK is synchronous and threadsafe — we drive it from a background
 thread and bridge to asyncio via a queue.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -172,7 +173,9 @@ class AngelOneWebSocket:
                 return
             # Angel sends LTP in paise (× 100) for some feeds
             ltp = float(ltp_raw) / 100.0 if float(ltp_raw) > 100000 else float(ltp_raw)
-            ts_ms = int(message.get("exchange_timestamp") or message.get("ft") or int(time.time() * 1000))
+            ts_ms = int(
+                message.get("exchange_timestamp") or message.get("ft") or int(time.time() * 1000)
+            )
             self._last_tick_ts = time.time()
 
             if self._loop is None:

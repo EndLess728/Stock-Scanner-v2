@@ -2,6 +2,7 @@
 
 `python run.py` -> launches the bot.
 """
+
 from __future__ import annotations
 
 import asyncio

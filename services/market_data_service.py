@@ -9,6 +9,7 @@ Responsibilities:
 - Push ticks into CandleEngine
 - Manage health monitoring (stale-tick reconnect)
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -63,8 +64,7 @@ class MarketDataService:
             self._token_to_index[idx.token] = name
             by_exchange.setdefault(idx.exchange_type, []).append(idx.token)
         return [
-            {"exchangeType": ex_type, "tokens": tokens}
-            for ex_type, tokens in by_exchange.items()
+            {"exchangeType": ex_type, "tokens": tokens} for ex_type, tokens in by_exchange.items()
         ]
 
     async def _seed_history(self) -> None:
@@ -74,9 +74,7 @@ class MarketDataService:
 
         now = now_ist()
         open_t = parse_hhmm(self.config.market.open_time)
-        market_open = IST.localize(
-            datetime.combine(now.date(), open_t)
-        )
+        market_open = IST.localize(datetime.combine(now.date(), open_t))
         from_dt = market_open - timedelta(minutes=5)
         to_dt = now
 
@@ -164,12 +162,16 @@ class MarketDataService:
                     continue
                 stale = self.ws.seconds_since_last_tick()
                 connected = self.ws.is_connected()
-                if connected and stale > 60 and is_market_open(
-                    now_ist(),
-                    self.config.market.open_time,
-                    self.config.market.close_time,
-                    self.config.market.trading_days,
-                    self.config.market.holidays,
+                if (
+                    connected
+                    and stale > 60
+                    and is_market_open(
+                        now_ist(),
+                        self.config.market.open_time,
+                        self.config.market.close_time,
+                        self.config.market.trading_days,
+                        self.config.market.holidays,
+                    )
                 ):
                     log.warning(f"Stale ticks ({stale:.0f}s) — kicking WebSocket")
                     await self.ws.stop()

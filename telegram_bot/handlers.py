@@ -6,6 +6,7 @@ The orchestrator injects these components into bot.bot_data:
   - "market_service": MarketDataService
   - "reload_fn"     : Callable[[], Awaitable[None]] hot-reload entrypoint
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -143,7 +144,9 @@ async def cmd_enable_setup(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if update.message is None:
         return
     if not context.args:
-        await update.message.reply_text("Usage: `/enable_setup <name>`", parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(
+            "Usage: `/enable_setup <name>`", parse_mode=ParseMode.MARKDOWN
+        )
         return
     name = context.args[0]
     setup_engine = _ctx(context).get("setup_engine")
@@ -151,7 +154,9 @@ async def cmd_enable_setup(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.message.reply_text("Setup engine not ready.")
         return
     if setup_engine.enable(name):
-        await update.message.reply_text(f"✅ Setup `{name}` enabled.", parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(
+            f"✅ Setup `{name}` enabled.", parse_mode=ParseMode.MARKDOWN
+        )
         log.info(f"Setup '{name}' enabled via Telegram")
     else:
         await update.message.reply_text(
@@ -166,7 +171,9 @@ async def cmd_disable_setup(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     if update.message is None:
         return
     if not context.args:
-        await update.message.reply_text("Usage: `/disable_setup <name>`", parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(
+            "Usage: `/disable_setup <name>`", parse_mode=ParseMode.MARKDOWN
+        )
         return
     name = context.args[0]
     setup_engine = _ctx(context).get("setup_engine")
@@ -174,7 +181,9 @@ async def cmd_disable_setup(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         await update.message.reply_text("Setup engine not ready.")
         return
     if setup_engine.disable(name):
-        await update.message.reply_text(f"⛔️ Setup `{name}` disabled.", parse_mode=ParseMode.MARKDOWN)
+        await update.message.reply_text(
+            f"⛔️ Setup `{name}` disabled.", parse_mode=ParseMode.MARKDOWN
+        )
         log.info(f"Setup '{name}' disabled via Telegram")
     else:
         await update.message.reply_text(

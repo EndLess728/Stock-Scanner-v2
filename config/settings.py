@@ -3,6 +3,7 @@
 - `Settings` (pydantic-settings) loads secrets and runtime knobs from .env
 - `AppConfig` is the typed view over `config/config.yaml` that gets hot-reloaded
 """
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,4 +1,5 @@
 """Domain models."""
+
 from models.candle import Candle, CandleSeries
 from models.signal import Signal, SignalDirection, AlertPayload
 from models.pattern import (

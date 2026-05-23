@@ -5,6 +5,7 @@ Provides:
 - start / stop lifecycle hooks
 - Command handlers (see handlers.py)
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable, Optional
@@ -74,7 +75,9 @@ class TelegramBot:
     # ------------------------------------------------------------------
     async def send_message(self, chat_id: int, payload: AlertPayload) -> bool:
         try:
-            parse_mode = ParseMode.MARKDOWN if payload.parse_mode.lower().startswith("markdown") else None
+            parse_mode = (
+                ParseMode.MARKDOWN if payload.parse_mode.lower().startswith("markdown") else None
+            )
             await self.app.bot.send_message(
                 chat_id=chat_id,
                 text=payload.text,

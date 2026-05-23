@@ -3,6 +3,7 @@
 Run:
     .venv/bin/python scripts/send_test_alert.py
 """
+
 from __future__ import annotations
 
 import asyncio

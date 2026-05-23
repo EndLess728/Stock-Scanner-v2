@@ -10,6 +10,7 @@ Validates:
 - Symmetry: |LS - RS| / H within `symmetry_tolerance`
 - Neckline breakout: close below the projected neckline confirms the pattern.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List

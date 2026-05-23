@@ -5,6 +5,7 @@ Identifies an anchor swing (last opposing swings) and reports:
 - *Breakout* through a level after retracement
 - *Retest* of a level
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List

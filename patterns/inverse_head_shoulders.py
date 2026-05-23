@@ -3,6 +3,7 @@
 Mirror image of H&S. Sequence L-H-L-H-L where the middle low is lower
 than both shoulders. Neckline drawn through the two intervening highs.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List

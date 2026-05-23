@@ -1,4 +1,5 @@
 """Timezone and time-bucketing helpers."""
+
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
@@ -74,7 +75,9 @@ def floor_to_timeframe(moment: datetime, tf: str) -> datetime:
     delta = (moment - anchor).total_seconds()
     if delta < 0:
         # Before market open -> previous day's anchor; still floor by tf
-        return (moment - timedelta(seconds=moment.second, microseconds=moment.microsecond)).replace(microsecond=0)
+        return (moment - timedelta(seconds=moment.second, microseconds=moment.microsecond)).replace(
+            microsecond=0
+        )
     bucket = int(delta // secs)
     return anchor + timedelta(seconds=bucket * secs)
 

@@ -5,6 +5,7 @@ two kinds of events to observers:
 - `on_tick(symbol, timeframe, candle)`     — in-progress candle updated
 - `on_close(symbol, timeframe, candle)`    — candle just closed
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -126,7 +127,9 @@ class CandleEngine:
                 log.exception(f"tick observer failed: {exc!r}")
 
     async def _fire_close(self, symbol: str, tf: str, candle: Candle) -> None:
-        log.debug(f"CLOSE {symbol} {tf} {candle.hhmm} O={candle.open} H={candle.high} L={candle.low} C={candle.close}")
+        log.debug(
+            f"CLOSE {symbol} {tf} {candle.hhmm} O={candle.open} H={candle.high} L={candle.low} C={candle.close}"
+        )
         for obs in self._close_observers:
             try:
                 await obs(symbol, tf, candle)
@@ -140,6 +143,7 @@ class CandleEngine:
 
         async def _loop() -> None:
             from utils.time_utils import now_ist
+
             while self._running:
                 try:
                     await self.force_close_due(now_ist())

@@ -6,6 +6,7 @@ Responsible for:
 - Daily quotas (max BUY / SELL per index per setup)
 - Rate-limited delivery to all configured chats
 """
+
 from __future__ import annotations
 
 import asyncio

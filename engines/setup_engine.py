@@ -3,6 +3,7 @@
 Loads all subclasses of `BaseSetup`, applies config, and routes closed candles
 to each setup. New setups added under `setups/` are auto-discovered.
 """
+
 from __future__ import annotations
 
 import importlib

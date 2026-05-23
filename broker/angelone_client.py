@@ -6,6 +6,7 @@ Wraps the official `smartapi-python` SDK with:
 - Historical candle fetch
 - Defensive error handling
 """
+
 from __future__ import annotations
 
 import asyncio

@@ -9,6 +9,7 @@ Notes:
   the setup's freshness gate would suppress them for stale candles anyway).
 - State is in-memory (per-day reset) so each trading day is independent.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -77,14 +78,15 @@ class StubAlertEngine:
 @dataclass
 class SignalEval:
     """Post-trade evaluation of a single signal, intraday only."""
-    direction: str            # "BUY" or "SELL"
+
+    direction: str  # "BUY" or "SELL"
     entry_price: float
     entry_time: str
-    mfe_pct: float = 0.0      # Max favorable excursion (signed positive when good)
-    mae_pct: float = 0.0      # Max adverse excursion (positive number)
-    eod_pct: float = 0.0      # EOD close P/L in % (positive = favorable)
+    mfe_pct: float = 0.0  # Max favorable excursion (signed positive when good)
+    mae_pct: float = 0.0  # Max adverse excursion (positive number)
+    eod_pct: float = 0.0  # EOD close P/L in % (positive = favorable)
     hit_target: bool = False  # Target hit before stop
-    hit_stop: bool = False    # Stop hit before target
+    hit_stop: bool = False  # Stop hit before target
 
     @property
     def winner_first(self) -> str:
@@ -234,8 +236,11 @@ async def backtest_index(
 
     log.info(f"[{name}] fetching candles {start.date()} → {end.date()} ({interval})")
     raw = await broker.get_candles(
-        exchange=exchange, symbol_token=token, interval=interval,
-        from_dt=start, to_dt=end,
+        exchange=exchange,
+        symbol_token=token,
+        interval=interval,
+        from_dt=start,
+        to_dt=end,
     )
     log.info(f"[{name}] got {len(raw)} rows")
 
@@ -334,10 +339,7 @@ def print_table(results: List[DayResult]) -> None:
     if not results:
         print("  (no data)")
         return
-    hdr = (
-        f"  {'Date':<11} {'Outcome':<22} {'RefH':>10} {'RefL':>10}  "
-        f"{'BUY':<26}  {'SELL':<26}"
-    )
+    hdr = f"  {'Date':<11} {'Outcome':<22} {'RefH':>10} {'RefL':>10}  {'BUY':<26}  {'SELL':<26}"
     print(hdr)
     print("  " + "-" * (len(hdr) - 2))
     for r in results:
@@ -443,7 +445,8 @@ async def main(days: int, only: Optional[List[str]], target_pct: float, stop_pct
     timeframe = inside_cfg.get("timeframe", "5min")
 
     indices = [
-        (name, idx) for name, idx in cfg.indices.items()
+        (name, idx)
+        for name, idx in cfg.indices.items()
         if idx.enabled and (only is None or name in only)
     ]
     if not indices:
@@ -457,13 +460,19 @@ async def main(days: int, only: Optional[List[str]], target_pct: float, stop_pct
 
     try:
         for name, idx in indices:
-            print(f"\n{'=' * 80}\n {name}  (token={idx.token}, exchange={idx.exchange})\n{'=' * 80}")
+            print(
+                f"\n{'=' * 80}\n {name}  (token={idx.token}, exchange={idx.exchange})\n{'=' * 80}"
+            )
             results = await backtest_index(
-                broker=broker, name=name,
-                exchange=idx.exchange, token=idx.token,
-                timeframe=timeframe, days=days,
+                broker=broker,
+                name=name,
+                exchange=idx.exchange,
+                token=idx.token,
+                timeframe=timeframe,
+                days=days,
                 setup_cfg=inside_cfg,
-                target_pct=target_pct, stop_pct=stop_pct,
+                target_pct=target_pct,
+                stop_pct=stop_pct,
             )
             print_table(results)
             print_summary(name, results, target_pct, stop_pct)
@@ -475,13 +484,22 @@ async def main(days: int, only: Optional[List[str]], target_pct: float, stop_pct
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Backtest inside-candle setup.")
     p.add_argument("--days", type=int, default=30, help="Lookback window in calendar days.")
-    p.add_argument("--index", type=str, default=None,
-                   help="Comma-separated index names (default: all enabled in config).")
+    p.add_argument(
+        "--index",
+        type=str,
+        default=None,
+        help="Comma-separated index names (default: all enabled in config).",
+    )
     # Default risk/reward is 1:2 — target is twice the stop (user preference).
-    p.add_argument("--target", type=float, default=0.60,
-                   help="Profit target in %% from entry (default 0.60 — 1:2 R:R with default stop).")
-    p.add_argument("--stop", type=float, default=0.30,
-                   help="Stop loss in %% from entry (default 0.30).")
+    p.add_argument(
+        "--target",
+        type=float,
+        default=0.60,
+        help="Profit target in %% from entry (default 0.60 — 1:2 R:R with default stop).",
+    )
+    p.add_argument(
+        "--stop", type=float, default=0.30, help="Stop loss in %% from entry (default 0.30)."
+    )
     return p.parse_args()
 
 

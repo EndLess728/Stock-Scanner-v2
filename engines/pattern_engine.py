@@ -7,6 +7,7 @@ in any lifecycle state (FORMING / CONFIRMED / INVALIDATED / BREAKOUT / RETEST).
 Confirmed/breakout/retest patterns are converted to Signals and pushed
 through the AlertEngine.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -129,9 +130,7 @@ class PatternEngine:
             direction = SignalDirection(direction_meta)
         except ValueError:
             direction = SignalDirection.BUY
-        price = pattern.confirmation_price or (
-            pattern.swings[-1].price if pattern.swings else 0.0
-        )
+        price = pattern.confirmation_price or (pattern.swings[-1].price if pattern.swings else 0.0)
         if price <= 0:
             return None
         return Signal(

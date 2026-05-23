@@ -1,4 +1,5 @@
 """Utility package."""
+
 from utils.logger import setup_logger, log
 from utils.time_utils import (
     now_ist,

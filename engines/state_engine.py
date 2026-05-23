@@ -1,4 +1,5 @@
 """Per-setup state engine — persists and restores daily state."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -54,9 +55,7 @@ class StateEngine:
         day = day or now_ist().date()
         deleted = await self.db.reset_setup_state(day)
         # Drop in-memory cache for older days
-        self._cache = {
-            k: v for k, v in self._cache.items() if k[0] == day.isoformat()
-        }
+        self._cache = {k: v for k, v in self._cache.items() if k[0] == day.isoformat()}
         log.info(f"State reset: pruned {deleted} stale rows older than {day}")
 
 

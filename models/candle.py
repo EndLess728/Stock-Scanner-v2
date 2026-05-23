@@ -1,4 +1,5 @@
 """Candle / OHLCV models."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -68,7 +69,7 @@ class CandleSeries(BaseModel):
             return
         self.candles.append(candle)
         if len(self.candles) > self.max_size:
-            self.candles = self.candles[-self.max_size:]
+            self.candles = self.candles[-self.max_size :]
 
     def last(self) -> Optional[Candle]:
         return self.candles[-1] if self.candles else None

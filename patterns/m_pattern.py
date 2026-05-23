@@ -3,6 +3,7 @@
 Sequence: H-L-H where the two highs are roughly equal (`peak_tolerance`)
 and a confirmed close below the trough fires the SELL signal.
 """
+
 from __future__ import annotations
 
 from typing import Any, Dict, List

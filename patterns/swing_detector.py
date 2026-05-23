@@ -1,4 +1,5 @@
 """Swing high / low detector — fractal-based with sensitivity threshold."""
+
 from __future__ import annotations
 
 from typing import List

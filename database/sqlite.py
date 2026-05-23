@@ -6,6 +6,7 @@ Stores:
 - user_preferences (per chat)
 - session metadata
 """
+
 from __future__ import annotations
 
 import json
