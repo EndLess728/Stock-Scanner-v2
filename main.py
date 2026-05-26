@@ -90,8 +90,47 @@ class Application:
             setup_engine=self.setup_engine,
             market_service=self.market_service,
             reload_fn=self.reload_config,
+            toggle_fn=self.apply_toggle,
         )
         log.success("Config reloaded")
+
+    # ------------------------------------------------------------------
+    # Runtime toggles (Telegram menu)
+    # ------------------------------------------------------------------
+    async def apply_toggle(self, scope: str, name: str) -> bool | None:
+        """Flip the enabled flag for a setup or index in-memory.
+
+        Returns the new state, or None if the name is unknown.
+        In-memory only — does not write to config.yaml.
+        """
+        if scope == "setup":
+            if name not in self.config.setups:
+                return None
+            new_state = not self.config.setups[name].enabled
+            if new_state:
+                self.setup_engine.enable(name)
+            else:
+                self.setup_engine.disable(name)
+            log.info(f"Setup '{name}' {'enabled' if new_state else 'disabled'} via menu")
+            return new_state
+
+        if scope == "index":
+            if name not in self.config.indices:
+                return None
+            new_state = not self.config.indices[name].enabled
+            self.config.indices[name].enabled = new_state
+            # Re-subscribe WS with the new index set
+            if self.market_service.ws is not None:
+                self.market_service.ws.set_subscriptions(
+                    self.market_service._build_subscriptions()
+                )
+            # Start tracking candles for newly enabled indices
+            if new_state:
+                self.candle_engine.track(name, self.config.timeframes.default)
+            log.info(f"Index '{name}' {'enabled' if new_state else 'disabled'} via menu")
+            return new_state
+
+        return None
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -111,6 +150,7 @@ class Application:
             setup_engine=self.setup_engine,
             market_service=self.market_service,
             reload_fn=self.reload_config,
+            toggle_fn=self.apply_toggle,
         )
         await self.bot.start()
         if self.config.telegram.send_startup_message:

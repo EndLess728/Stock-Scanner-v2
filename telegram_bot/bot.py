@@ -10,12 +10,13 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-from telegram import Update
+from telegram import BotCommand, Update
 from telegram.constants import ParseMode
 from telegram.error import TelegramError
 from telegram.ext import (
     Application,
     ApplicationBuilder,
+    CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
 )
@@ -32,6 +33,7 @@ class TelegramBot:
         self.default_chat_ids = list(default_chat_ids)
         self.app: Application = ApplicationBuilder().token(token).build()
         self._started = False
+        self._menu_commands: list[BotCommand] = []
         # Injected context (set by main.py) - exposed to handlers via bot_data
         self.context: dict[str, Any] = {}
 
@@ -50,12 +52,33 @@ class TelegramBot:
     ) -> None:
         self.app.add_handler(CommandHandler(name, handler))
 
+    def register_callback_query(
+        self,
+        handler: Callable[[Update, ContextTypes.DEFAULT_TYPE], Any],
+        pattern: Optional[str] = None,
+    ) -> None:
+        """Attach a CallbackQueryHandler — used for inline-keyboard menu taps."""
+        self.app.add_handler(CallbackQueryHandler(handler, pattern=pattern))
+
+    def set_command_menu(self, commands: list[tuple[str, str]]) -> None:
+        """Stash the (command, description) pairs Telegram should show in the menu.
+
+        The actual API call happens in `start()` once the bot is initialized.
+        """
+        self._menu_commands = [BotCommand(name, desc) for name, desc in commands]
+
     async def start(self) -> None:
         if self._started:
             return
         await self.app.initialize()
         await self.app.start()
         await self.app.updater.start_polling(drop_pending_updates=True)
+        if self._menu_commands:
+            try:
+                await self.app.bot.set_my_commands(self._menu_commands)
+                log.info(f"Telegram menu set with {len(self._menu_commands)} commands")
+            except TelegramError as exc:
+                log.error(f"Failed to set Telegram command menu: {exc!r}")
         self._started = True
         log.success("Telegram bot polling started")
 
