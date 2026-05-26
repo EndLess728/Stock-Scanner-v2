@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, Optional
+from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 from utils.time_utils import IST, now_ist
 
 
-class SignalDirection(str, Enum):
+class SignalDirection(StrEnum):
     BUY = "BUY"
     SELL = "SELL"
 
@@ -23,11 +23,11 @@ class Signal(BaseModel):
     index: str
     direction: SignalDirection
     price: float
-    reference_high: Optional[float] = None
-    reference_low: Optional[float] = None
+    reference_high: float | None = None
+    reference_low: float | None = None
     timeframe: str = "5min"
     timestamp: datetime = Field(default_factory=now_ist)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def time_str(self) -> str:
@@ -48,7 +48,7 @@ class AlertPayload(BaseModel):
     text: str
     parse_mode: str = "Markdown"
     silent: bool = False
-    signal: Optional[Signal] = None
+    signal: Signal | None = None
 
 
 __all__ = ["Signal", "SignalDirection", "AlertPayload"]

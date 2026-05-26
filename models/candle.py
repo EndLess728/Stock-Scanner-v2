@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterable, Iterator, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -36,7 +36,7 @@ class Candle(BaseModel):
         self.close = price
         self.volume += volume
 
-    def inside(self, other: "Candle") -> bool:
+    def inside(self, other: Candle) -> bool:
         """True if this candle's range is strictly inside `other`'s range."""
         return self.high < other.high and self.low > other.low
 
@@ -60,7 +60,7 @@ class CandleSeries(BaseModel):
     symbol: str
     timeframe: str
     max_size: int = 500
-    candles: List[Candle] = Field(default_factory=list)
+    candles: list[Candle] = Field(default_factory=list)
 
     def append(self, candle: Candle) -> None:
         if self.candles and candle.start <= self.candles[-1].start:
@@ -71,13 +71,13 @@ class CandleSeries(BaseModel):
         if len(self.candles) > self.max_size:
             self.candles = self.candles[-self.max_size :]
 
-    def last(self) -> Optional[Candle]:
+    def last(self) -> Candle | None:
         return self.candles[-1] if self.candles else None
 
-    def closed_candles(self) -> List[Candle]:
+    def closed_candles(self) -> list[Candle]:
         return [c for c in self.candles if c.is_closed]
 
-    def find_by_hhmm(self, hhmm: str) -> Optional[Candle]:
+    def find_by_hhmm(self, hhmm: str) -> Candle | None:
         """Return the candle that opened at `HH:MM` *today* (IST)."""
         from utils.time_utils import now_ist
 

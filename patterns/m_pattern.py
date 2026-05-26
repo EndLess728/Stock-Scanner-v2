@@ -6,7 +6,7 @@ and a confirmed close below the trough fires the SELL signal.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from engines.pattern_engine import register_detector
 from models.candle import CandleSeries
@@ -16,7 +16,7 @@ from utils.time_utils import now_ist
 
 
 @register_detector("m_pattern")
-def detect_m_pattern(series: CandleSeries, config: Dict[str, Any]) -> List[Pattern]:
+def detect_m_pattern(series: CandleSeries, config: dict[str, Any]) -> list[Pattern]:
     if not config.get("enabled", False):
         return []
     if len(series) < int(config.get("min_pattern_bars", 10)):
@@ -35,7 +35,7 @@ def detect_m_pattern(series: CandleSeries, config: Dict[str, Any]) -> List[Patte
     if last is None or not last.is_closed:
         return []
 
-    out: List[Pattern] = []
+    out: list[Pattern] = []
     window = swings[-3:]
     if [s.kind for s in window] != [SwingKind.HIGH, SwingKind.LOW, SwingKind.HIGH]:
         return []

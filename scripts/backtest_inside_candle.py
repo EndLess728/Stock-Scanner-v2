@@ -19,7 +19,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Allow `import config`, `import setups`, etc. when run from repo root or scripts/
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -40,15 +40,15 @@ class StubStateEngine:
     """In-memory state. Mirrors the StateEngine surface used by InsideCandleSetup."""
 
     def __init__(self) -> None:
-        self._store: Dict[tuple, Dict[str, Any]] = {}
+        self._store: dict[tuple, dict[str, Any]] = {}
 
-    async def get(self, setup: str, symbol: str, day=None) -> Dict[str, Any]:
+    async def get(self, setup: str, symbol: str, day=None) -> dict[str, Any]:
         return dict(self._store.get((setup, symbol), {}))
 
-    async def set(self, setup: str, symbol: str, state: Dict[str, Any], day=None) -> None:
+    async def set(self, setup: str, symbol: str, state: dict[str, Any], day=None) -> None:
         self._store[(setup, symbol)] = dict(state)
 
-    async def update(self, setup: str, symbol: str, patch: Dict[str, Any], day=None):
+    async def update(self, setup: str, symbol: str, patch: dict[str, Any], day=None):
         cur = await self.get(setup, symbol, day)
         cur.update(patch)
         await self.set(setup, symbol, cur, day)
@@ -62,7 +62,7 @@ class StubAlertEngine:
     """Captures notify() calls (used only when freshness gate passes — rarely)."""
 
     def __init__(self) -> None:
-        self.notifications: List[tuple[Optional[str], str]] = []
+        self.notifications: list[tuple[str | None, str]] = []
 
     async def notify(self, text: str, dedup_key=None, parse_mode="Markdown") -> bool:
         self.notifications.append((dedup_key, text))
@@ -101,16 +101,16 @@ class SignalEval:
 class DayResult:
     date: str
     index: str
-    ref_high: Optional[float] = None
-    ref_low: Optional[float] = None
-    inside_seen: List[str] = field(default_factory=list)
+    ref_high: float | None = None
+    ref_low: float | None = None
+    inside_seen: list[str] = field(default_factory=list)
     armed: bool = False
     invalidated: bool = False
-    invalidated_at: Optional[str] = None
-    buy: Optional[Signal] = None
-    sell: Optional[Signal] = None
-    buy_eval: Optional[SignalEval] = None
-    sell_eval: Optional[SignalEval] = None
+    invalidated_at: str | None = None
+    buy: Signal | None = None
+    sell: Signal | None = None
+    buy_eval: SignalEval | None = None
+    sell_eval: SignalEval | None = None
 
     @property
     def outcome(self) -> str:
@@ -133,7 +133,7 @@ def evaluate_signal(
     direction: str,
     entry_price: float,
     entry_time: str,
-    after_candles: List[Candle],
+    after_candles: list[Candle],
     target_pct: float,
     stop_pct: float,
 ) -> SignalEval:
@@ -226,10 +226,10 @@ async def backtest_index(
     token: str,
     timeframe: str,
     days: int,
-    setup_cfg: Dict[str, Any],
+    setup_cfg: dict[str, Any],
     target_pct: float = 0.30,
     stop_pct: float = 0.30,
-) -> List[DayResult]:
+) -> list[DayResult]:
     interval = AngelOneClient.interval_for_timeframe(timeframe)
     end = datetime.now(IST).replace(hour=15, minute=30, second=0, microsecond=0)
     start = (end - timedelta(days=days)).replace(hour=9, minute=15, second=0, microsecond=0)
@@ -245,7 +245,7 @@ async def backtest_index(
     log.info(f"[{name}] got {len(raw)} rows")
 
     # Group rows by trading date
-    by_day: Dict[Any, List[list]] = defaultdict(list)
+    by_day: dict[Any, list[list]] = defaultdict(list)
     for row in raw:
         ts = parse_angel_ts(row[0])
         if ts.tzinfo is None:
@@ -261,13 +261,13 @@ async def backtest_index(
         alerts=alerts,
     )
 
-    results: List[DayResult] = []
+    results: list[DayResult] = []
     for day in sorted(by_day.keys()):
         state.reset()
         result = DayResult(date=day.isoformat(), index=name)
-        intraday: List[Candle] = []
-        buy_idx: Optional[int] = None
-        sell_idx: Optional[int] = None
+        intraday: list[Candle] = []
+        buy_idx: int | None = None
+        sell_idx: int | None = None
 
         # Sort intraday by time
         rows = sorted(by_day[day], key=lambda r: parse_angel_ts(r[0]))
@@ -326,7 +326,7 @@ async def backtest_index(
 # ---------------------------------------------------------------------------
 # Reporting
 # ---------------------------------------------------------------------------
-def _fmt_signal(sig: Optional[Signal], ev: Optional[SignalEval]) -> str:
+def _fmt_signal(sig: Signal | None, ev: SignalEval | None) -> str:
     if sig is None:
         return "-"
     base = f"{sig.price:.1f}@{sig.time_str}"
@@ -335,7 +335,7 @@ def _fmt_signal(sig: Optional[Signal], ev: Optional[SignalEval]) -> str:
     return f"{base} [{ev.winner_first} eod{ev.eod_pct:+.2f}%]"
 
 
-def print_table(results: List[DayResult]) -> None:
+def print_table(results: list[DayResult]) -> None:
     if not results:
         print("  (no data)")
         return
@@ -350,7 +350,7 @@ def print_table(results: List[DayResult]) -> None:
         print(f"  {r.date:<11} {r.outcome:<22} {rh:>10} {rl:>10}  {buy:<26}  {sell:<26}")
 
 
-def print_summary(name: str, results: List[DayResult], target_pct: float, stop_pct: float) -> None:
+def print_summary(name: str, results: list[DayResult], target_pct: float, stop_pct: float) -> None:
     total = len(results)
     armed = sum(1 for r in results if r.armed)
     invalid = sum(1 for r in results if r.invalidated and not r.armed)
@@ -359,7 +359,7 @@ def print_summary(name: str, results: List[DayResult], target_pct: float, stop_p
     no_ref = sum(1 for r in results if r.ref_high is None)
 
     # Collect all evals
-    evals: List[SignalEval] = []
+    evals: list[SignalEval] = []
     for r in results:
         if r.buy_eval:
             evals.append(r.buy_eval)
@@ -438,7 +438,7 @@ def print_summary(name: str, results: List[DayResult], target_pct: float, stop_p
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-async def main(days: int, only: Optional[List[str]], target_pct: float, stop_pct: float) -> int:
+async def main(days: int, only: list[str] | None, target_pct: float, stop_pct: float) -> int:
     setup_logger(level=settings.log_level, log_file=None)
     cfg = load_yaml_config()
     inside_cfg = cfg.setups["inside_candle"].model_dump()
@@ -454,7 +454,7 @@ async def main(days: int, only: Optional[List[str]], target_pct: float, stop_pct
         return 2
 
     broker = AngelOneClient()
-    print(f"Logging into Angel One …")
+    print("Logging into Angel One …")
     await broker.login()
     print("Login OK\n")
 

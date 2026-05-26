@@ -14,7 +14,9 @@ import asyncio
 import json
 import threading
 import time
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from collections.abc import Awaitable, Callable
+from contextlib import suppress
+from typing import Any
 
 try:
     from SmartApi.smartWebSocketV2 import SmartWebSocketV2  # type: ignore
@@ -24,9 +26,8 @@ except ImportError:  # pragma: no cover
 from broker.angelone_client import AngelOneClient
 from utils.logger import log
 
-
 # Tick callback signature: async fn(symbol_token: str, ltp: float, ts_ms: int, raw: dict)
-TickCallback = Callable[[str, float, int, Dict[str, Any]], Awaitable[None]]
+TickCallback = Callable[[str, float, int, dict[str, Any]], Awaitable[None]]
 
 
 class AngelOneWebSocket:
@@ -40,7 +41,7 @@ class AngelOneWebSocket:
         self,
         broker: AngelOneClient,
         tick_callback: TickCallback,
-        subscriptions: Optional[List[Dict[str, Any]]] = None,
+        subscriptions: list[dict[str, Any]] | None = None,
         mode: int = MODE_LTP,
         correlation_id: str = "stock_scanner_v2",
     ) -> None:
@@ -49,15 +50,15 @@ class AngelOneWebSocket:
 
         self.broker = broker
         self.tick_callback = tick_callback
-        self.subscriptions: List[Dict[str, Any]] = subscriptions or []
+        self.subscriptions: list[dict[str, Any]] = subscriptions or []
         self.mode = mode
         self.correlation_id = correlation_id
 
-        self._ws: Optional[Any] = None
-        self._thread: Optional[threading.Thread] = None
+        self._ws: Any | None = None
+        self._thread: threading.Thread | None = None
         self._running = False
         self._connected = threading.Event()
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._last_tick_ts = 0.0
         self._reconnect_backoff = 2.0
 
@@ -76,10 +77,8 @@ class AngelOneWebSocket:
     async def stop(self) -> None:
         self._running = False
         if self._ws is not None:
-            try:
+            with suppress(Exception):  # pragma: no cover
                 self._ws.close_connection()
-            except Exception:  # pragma: no cover
-                pass
         if self._thread is not None:
             self._thread.join(timeout=5.0)
         log.info("Angel WebSocket stopped")
@@ -87,7 +86,7 @@ class AngelOneWebSocket:
     # ------------------------------------------------------------------
     # Subscriptions
     # ------------------------------------------------------------------
-    def set_subscriptions(self, subscriptions: List[Dict[str, Any]]) -> None:
+    def set_subscriptions(self, subscriptions: list[dict[str, Any]]) -> None:
         self.subscriptions = subscriptions
         if self._ws is not None and self._connected.is_set():
             try:

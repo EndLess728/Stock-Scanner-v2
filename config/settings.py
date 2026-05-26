@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field, field_validator
@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     )
 
     @property
-    def chat_ids(self) -> List[int]:
-        out: List[int] = []
+    def chat_ids(self) -> list[int]:
+        out: list[int] = []
         for raw in self.telegram_chat_ids.split(","):
             raw = raw.strip()
             if not raw:
@@ -65,8 +65,8 @@ class MarketConfig(BaseModel):
     open_time: str = "09:15"
     close_time: str = "15:30"
     pre_open_buffer_minutes: int = 2
-    trading_days: List[str] = Field(default_factory=lambda: ["Mon", "Tue", "Wed", "Thu", "Fri"])
-    holidays: List[str] = Field(default_factory=list)
+    trading_days: list[str] = Field(default_factory=lambda: ["Mon", "Tue", "Wed", "Thu", "Fri"])
+    holidays: list[str] = Field(default_factory=list)
 
 
 class IndexConfig(BaseModel):
@@ -80,13 +80,13 @@ class IndexConfig(BaseModel):
 
 class TimeframesConfig(BaseModel):
     default: str = "5min"
-    available: List[str] = Field(default_factory=lambda: ["1min", "3min", "5min", "15min"])
+    available: list[str] = Field(default_factory=lambda: ["1min", "3min", "5min", "15min"])
 
 
 class SetupBaseConfig(BaseModel):
     enabled: bool = True
     timeframe: str = "5min"
-    indices: List[str] = Field(default_factory=list)
+    indices: list[str] = Field(default_factory=list)
     alert_cooldown_seconds: int = 60
     max_buy_alerts_per_day: int = 1
     max_sell_alerts_per_day: int = 1
@@ -120,9 +120,9 @@ class AppConfig(BaseModel):
     """Top-level YAML config object."""
 
     market: MarketConfig = Field(default_factory=MarketConfig)
-    indices: Dict[str, IndexConfig] = Field(default_factory=dict)
+    indices: dict[str, IndexConfig] = Field(default_factory=dict)
     timeframes: TimeframesConfig = Field(default_factory=TimeframesConfig)
-    setups: Dict[str, SetupBaseConfig] = Field(default_factory=dict)
+    setups: dict[str, SetupBaseConfig] = Field(default_factory=dict)
     patterns: PatternEngineConfig = Field(default_factory=PatternEngineConfig)
     telegram: TelegramConfig = Field(default_factory=TelegramConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
@@ -132,14 +132,14 @@ class AppConfig(BaseModel):
     def _coerce_indices(cls, v: Any) -> Any:
         return v or {}
 
-    def enabled_indices(self) -> List[str]:
+    def enabled_indices(self) -> list[str]:
         return [name for name, cfg in self.indices.items() if cfg.enabled]
 
-    def enabled_setups(self) -> List[str]:
+    def enabled_setups(self) -> list[str]:
         return [name for name, cfg in self.setups.items() if cfg.enabled]
 
 
-def load_yaml_config(path: Optional[str] = None) -> AppConfig:
+def load_yaml_config(path: str | None = None) -> AppConfig:
     """Load and validate `config.yaml`."""
     cfg_path = Path(path or settings.config_path)
     if not cfg_path.exists():

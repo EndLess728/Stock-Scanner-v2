@@ -9,14 +9,13 @@ two kinds of events to observers:
 from __future__ import annotations
 
 import asyncio
-from collections import defaultdict
+from collections.abc import Awaitable, Callable
+from contextlib import suppress
 from datetime import datetime, timedelta
-from typing import Awaitable, Callable, Dict, List, Set, Tuple
 
 from models.candle import Candle, CandleSeries
 from utils.logger import log
 from utils.time_utils import IST, floor_to_timeframe, timeframe_to_seconds
-
 
 TickObserver = Callable[[str, str, Candle], Awaitable[None]]
 CloseObserver = Callable[[str, str, Candle], Awaitable[None]]
@@ -26,10 +25,10 @@ class CandleEngine:
     """Aggregates ticks into candles for any (symbol, timeframe) combination."""
 
     def __init__(self) -> None:
-        self._series: Dict[Tuple[str, str], CandleSeries] = {}
-        self._tick_observers: List[TickObserver] = []
-        self._close_observers: List[CloseObserver] = []
-        self._tracked: Set[Tuple[str, str]] = set()
+        self._series: dict[tuple[str, str], CandleSeries] = {}
+        self._tick_observers: list[TickObserver] = []
+        self._close_observers: list[CloseObserver] = []
+        self._tracked: set[tuple[str, str]] = set()
         self._lock = asyncio.Lock()
         self._closer_task: asyncio.Task[None] | None = None
         self._running = False
@@ -54,7 +53,7 @@ class CandleEngine:
         return self._series[key]
 
     # ------------------------------ history ----------------------------
-    def seed_history(self, symbol: str, timeframe: str, candles: List[Candle]) -> None:
+    def seed_history(self, symbol: str, timeframe: str, candles: list[Candle]) -> None:
         series = self.series_for(symbol, timeframe)
         for c in candles:
             c.is_closed = True
@@ -157,10 +156,8 @@ class CandleEngine:
         self._running = False
         if self._closer_task is not None:
             self._closer_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self._closer_task
-            except asyncio.CancelledError:
-                pass
 
 
 __all__ = ["CandleEngine", "TickObserver", "CloseObserver"]

@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import asyncio
 import time as _time
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any
 
 import pyotp
 
@@ -33,10 +33,10 @@ class AngelOneClient:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        client_id: Optional[str] = None,
-        password: Optional[str] = None,
-        totp_secret: Optional[str] = None,
+        api_key: str | None = None,
+        client_id: str | None = None,
+        password: str | None = None,
+        totp_secret: str | None = None,
     ) -> None:
         self.api_key = api_key or settings.angel_api_key
         self.client_id = client_id or settings.angel_client_id
@@ -49,10 +49,10 @@ class AngelOneClient:
             )
 
         self._smart: Any = SmartConnect(api_key=self.api_key)
-        self._auth_token: Optional[str] = None
-        self._refresh_token: Optional[str] = None
-        self._feed_token: Optional[str] = None
-        self._session_started_at: Optional[float] = None
+        self._auth_token: str | None = None
+        self._refresh_token: str | None = None
+        self._feed_token: str | None = None
+        self._session_started_at: float | None = None
         self._lock = asyncio.Lock()
 
     # ------------------------------------------------------------------
@@ -62,7 +62,7 @@ class AngelOneClient:
         return pyotp.TOTP(self.totp_secret).now()
 
     @async_retry(attempts=3, base_delay=2.0, max_delay=15.0)
-    async def login(self) -> Dict[str, str]:
+    async def login(self) -> dict[str, str]:
         """Authenticate and generate a session.
 
         Returns dict with auth_token, refresh_token, feed_token.
@@ -71,7 +71,7 @@ class AngelOneClient:
             totp = self._generate_totp()
             log.info(f"AngelOne login: client_id={self.client_id} totp=******")
             loop = asyncio.get_running_loop()
-            data: Dict[str, Any] = await loop.run_in_executor(
+            data: dict[str, Any] = await loop.run_in_executor(
                 None,
                 lambda: self._smart.generateSession(self.client_id, self.password, totp),
             )
@@ -116,7 +116,7 @@ class AngelOneClient:
     # ------------------------------------------------------------------
     # Profile / health
     # ------------------------------------------------------------------
-    async def get_profile(self) -> Dict[str, Any]:
+    async def get_profile(self) -> dict[str, Any]:
         await self.ensure_session()
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(None, lambda: self._smart.getProfile(self._refresh_token))
@@ -146,7 +146,7 @@ class AngelOneClient:
         interval: str,
         from_dt: datetime,
         to_dt: datetime,
-    ) -> List[List[Any]]:
+    ) -> list[list[Any]]:
         """Fetch historical candles.
 
         `interval` must be one of Angel One's supported values, e.g.

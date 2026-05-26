@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Dict, Optional
+from typing import Any
 
 from database.sqlite import Database
 from utils.logger import log
@@ -16,9 +16,9 @@ class StateEngine:
     def __init__(self, db: Database) -> None:
         self.db = db
         # In-memory cache: {(date, setup, index): state}
-        self._cache: Dict[tuple[str, str, str], Dict[str, Any]] = {}
+        self._cache: dict[tuple[str, str, str], dict[str, Any]] = {}
 
-    async def get(self, setup: str, index_name: str, day: Optional[date] = None) -> Dict[str, Any]:
+    async def get(self, setup: str, index_name: str, day: date | None = None) -> dict[str, Any]:
         day = day or now_ist().date()
         key = (day.isoformat(), setup, index_name)
         if key in self._cache:
@@ -31,8 +31,8 @@ class StateEngine:
         self,
         setup: str,
         index_name: str,
-        state: Dict[str, Any],
-        day: Optional[date] = None,
+        state: dict[str, Any],
+        day: date | None = None,
     ) -> None:
         day = day or now_ist().date()
         key = (day.isoformat(), setup, index_name)
@@ -43,15 +43,15 @@ class StateEngine:
         self,
         setup: str,
         index_name: str,
-        patch: Dict[str, Any],
-        day: Optional[date] = None,
-    ) -> Dict[str, Any]:
+        patch: dict[str, Any],
+        day: date | None = None,
+    ) -> dict[str, Any]:
         current = await self.get(setup, index_name, day)
         current.update(patch)
         await self.set(setup, index_name, current, day)
         return current
 
-    async def reset_daily(self, day: Optional[date] = None) -> None:
+    async def reset_daily(self, day: date | None = None) -> None:
         day = day or now_ist().date()
         deleted = await self.db.reset_setup_state(day)
         # Drop in-memory cache for older days

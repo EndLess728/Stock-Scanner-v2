@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple
 
 import numpy as np
 
@@ -16,7 +16,7 @@ class Trendline:
 
     slope: float
     intercept: float
-    points: List[Tuple[int, float]]
+    points: list[tuple[int, float]]
     kind: str  # "resistance" | "support"
 
     def value_at(self, x: int) -> float:
@@ -32,7 +32,7 @@ class Trendline:
         return abs(self.slope) < tol
 
 
-def fit_line(points: Sequence[Tuple[int, float]]) -> Tuple[float, float]:
+def fit_line(points: Sequence[tuple[int, float]]) -> tuple[float, float]:
     """Linear regression on (x, y) points. Returns (slope, intercept)."""
     if len(points) < 2:
         return 0.0, points[0][1] if points else 0.0
@@ -60,7 +60,7 @@ def trendline_through_lows(swings: Sequence[SwingPoint]) -> Trendline | None:
 
 def count_touches(
     line: Trendline,
-    candles_highs_lows: Sequence[Tuple[int, float, float]],  # (idx, high, low)
+    candles_highs_lows: Sequence[tuple[int, float, float]],  # (idx, high, low)
     tolerance_pct: float = 0.002,
 ) -> int:
     """Count how many candles touch the trendline within `tolerance_pct`."""
@@ -68,9 +68,12 @@ def count_touches(
     for idx, high, low in candles_highs_lows:
         y = line.value_at(idx)
         tol = abs(y) * tolerance_pct
-        if line.kind == "resistance" and abs(high - y) <= tol:
-            touches += 1
-        elif line.kind == "support" and abs(low - y) <= tol:
+        if (
+            line.kind == "resistance"
+            and abs(high - y) <= tol
+            or line.kind == "support"
+            and abs(low - y) <= tol
+        ):
             touches += 1
     return touches
 

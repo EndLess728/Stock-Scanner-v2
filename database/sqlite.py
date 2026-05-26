@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiosqlite
 
@@ -63,7 +63,7 @@ class Database:
     def __init__(self, path: str) -> None:
         self.path = path
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        self._conn: Optional[aiosqlite.Connection] = None
+        self._conn: aiosqlite.Connection | None = None
 
     async def connect(self) -> None:
         if self._conn is not None:
@@ -99,7 +99,7 @@ class Database:
         index_name: str,
         direction: str,
         price: float,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
     ) -> bool:
         """Insert if not exists. Returns True if inserted."""
         try:
@@ -143,7 +143,7 @@ class Database:
         trade_date: date,
         setup: str,
         index_name: str,
-        state: Dict[str, Any],
+        state: dict[str, Any],
     ) -> None:
         await self.conn.execute(
             """
@@ -164,7 +164,7 @@ class Database:
 
     async def load_setup_state(
         self, trade_date: date, setup: str, index_name: str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         async with self.conn.execute(
             "SELECT state FROM setup_state WHERE trade_date=? AND setup=? AND index_name=?",
             (trade_date.isoformat(), setup, index_name),
@@ -183,7 +183,7 @@ class Database:
         return cur.rowcount
 
     # ------------------------- user preferences -------------------------
-    async def upsert_user_pref(self, chat_id: int, prefs: Dict[str, Any]) -> None:
+    async def upsert_user_pref(self, chat_id: int, prefs: dict[str, Any]) -> None:
         await self.conn.execute(
             """
             INSERT INTO user_preferences (chat_id, preferences, updated_at)
@@ -195,14 +195,14 @@ class Database:
         )
         await self.conn.commit()
 
-    async def get_user_pref(self, chat_id: int) -> Dict[str, Any]:
+    async def get_user_pref(self, chat_id: int) -> dict[str, Any]:
         async with self.conn.execute(
             "SELECT preferences FROM user_preferences WHERE chat_id=?", (chat_id,)
         ) as cur:
             row = await cur.fetchone()
             return json.loads(row[0]) if row else {}
 
-    async def list_user_chats(self) -> List[int]:
+    async def list_user_chats(self) -> list[int]:
         async with self.conn.execute("SELECT chat_id FROM user_preferences") as cur:
             return [int(r[0]) async for r in cur]
 
@@ -217,17 +217,17 @@ class Database:
         )
         await self.conn.commit()
 
-    async def get_meta(self, key: str) -> Optional[str]:
+    async def get_meta(self, key: str) -> str | None:
         async with self.conn.execute("SELECT value FROM session_meta WHERE key=?", (key,)) as cur:
             row = await cur.fetchone()
             return row[0] if row else None
 
 
 # Module-level singleton
-_db: Optional[Database] = None
+_db: Database | None = None
 
 
-def get_database(path: Optional[str] = None) -> Database:
+def get_database(path: str | None = None) -> Database:
     """Return process-wide Database singleton."""
     global _db
     if _db is None:

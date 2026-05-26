@@ -13,8 +13,9 @@ Responsibilities:
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from broker.angelone_client import AngelOneClient
 from broker.websocket_client import AngelOneWebSocket
@@ -43,11 +44,11 @@ class MarketDataService:
         self.candle_engine = candle_engine
         self.setup_engine = setup_engine
         self.pattern_engine = pattern_engine
-        self.ws: Optional[AngelOneWebSocket] = None
+        self.ws: AngelOneWebSocket | None = None
 
         # token -> index name (e.g. "99926000" -> "NIFTY50")
-        self._token_to_index: Dict[str, str] = {}
-        self._healthcheck_task: Optional[asyncio.Task[None]] = None
+        self._token_to_index: dict[str, str] = {}
+        self._healthcheck_task: asyncio.Task[None] | None = None
         self._stop = asyncio.Event()
 
     def reload_config(self, config: AppConfig) -> None:
@@ -56,8 +57,8 @@ class MarketDataService:
     # ------------------------------------------------------------------
     # Setup
     # ------------------------------------------------------------------
-    def _build_subscriptions(self) -> List[Dict[str, Any]]:
-        by_exchange: Dict[int, List[str]] = {}
+    def _build_subscriptions(self) -> list[dict[str, Any]]:
+        by_exchange: dict[int, list[str]] = {}
         for name, idx in self.config.indices.items():
             if not idx.enabled:
                 continue
@@ -98,7 +99,7 @@ class MarketDataService:
                 log.warning(f"History seed failed for {name}: {exc!r}")
                 continue
 
-            candles: List[Candle] = []
+            candles: list[Candle] = []
             for row in raw:
                 # [timestamp, open, high, low, close, volume]
                 ts_raw = row[0]
@@ -134,7 +135,7 @@ class MarketDataService:
     # ------------------------------------------------------------------
     # Tick callback
     # ------------------------------------------------------------------
-    async def _on_tick(self, token: str, ltp: float, ts_ms: int, raw: Dict[str, Any]) -> None:
+    async def _on_tick(self, token: str, ltp: float, ts_ms: int, raw: dict[str, Any]) -> None:
         index = self._token_to_index.get(token)
         if index is None:
             return
@@ -224,10 +225,8 @@ class MarketDataService:
         self._stop.set()
         if self._healthcheck_task is not None:
             self._healthcheck_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self._healthcheck_task
-            except asyncio.CancelledError:
-                pass
         if self.ws is not None:
             await self.ws.stop()
         await self.candle_engine.stop_closer()

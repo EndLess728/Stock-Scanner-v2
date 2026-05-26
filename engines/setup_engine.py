@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Type
 
 from config.settings import AppConfig
 from engines.alert_engine import AlertEngine
 from engines.state_engine import StateEngine
 from models.candle import Candle
 from models.signal import Signal
-from setups.base_setup import BaseSetup, SETUP_REGISTRY
+from setups.base_setup import SETUP_REGISTRY, BaseSetup
 from utils.logger import log
 
 
@@ -31,13 +30,13 @@ class SetupEngine:
         self.config = config
         self.state = state
         self.alerts = alerts
-        self._setups: Dict[str, BaseSetup] = {}
+        self._setups: dict[str, BaseSetup] = {}
 
     # ------------------------------------------------------------------
     # Discovery
     # ------------------------------------------------------------------
     @staticmethod
-    def discover_setups() -> Dict[str, Type[BaseSetup]]:
+    def discover_setups() -> dict[str, type[BaseSetup]]:
         """Import every module under `setups/` so they register themselves."""
         import setups as _setups_pkg
 
@@ -69,7 +68,7 @@ class SetupEngine:
             self._setups[name] = instance
             log.info(f"Setup '{name}' registered for indices={cfg.indices}")
 
-    def enabled_names(self) -> List[str]:
+    def enabled_names(self) -> list[str]:
         return list(self._setups.keys())
 
     def enable(self, name: str) -> bool:
@@ -104,7 +103,7 @@ class SetupEngine:
             if symbol not in cfg.indices:
                 continue
             try:
-                signal: Optional[Signal] = await setup.on_candle(symbol, candle)
+                signal: Signal | None = await setup.on_candle(symbol, candle)
                 if signal is not None:
                     await self.alerts.dispatch(signal)
             except Exception as exc:  # pragma: no cover

@@ -8,7 +8,8 @@ Provides:
 
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from telegram import BotCommand, Update
 from telegram.constants import ParseMode
@@ -55,7 +56,7 @@ class TelegramBot:
     def register_callback_query(
         self,
         handler: Callable[[Update, ContextTypes.DEFAULT_TYPE], Any],
-        pattern: Optional[str] = None,
+        pattern: str | None = None,
     ) -> None:
         """Attach a CallbackQueryHandler — used for inline-keyboard menu taps."""
         self.app.add_handler(CallbackQueryHandler(handler, pattern=pattern))
@@ -72,7 +73,11 @@ class TelegramBot:
             return
         await self.app.initialize()
         await self.app.start()
-        await self.app.updater.start_polling(drop_pending_updates=True)
+        # `app.updater` is None when the Application is built without polling
+        # support; ApplicationBuilder().token(...) always provisions one, but
+        # the type stub still types it as Optional.
+        if self.app.updater is not None:
+            await self.app.updater.start_polling(drop_pending_updates=True)
         if self._menu_commands:
             try:
                 await self.app.bot.set_my_commands(self._menu_commands)
@@ -86,7 +91,8 @@ class TelegramBot:
         if not self._started:
             return
         try:
-            await self.app.updater.stop()
+            if self.app.updater is not None:
+                await self.app.updater.stop()
             await self.app.stop()
             await self.app.shutdown()
         finally:

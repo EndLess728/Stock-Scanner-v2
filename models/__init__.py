@@ -1,14 +1,14 @@
 """Domain models."""
 
 from models.candle import Candle, CandleSeries
-from models.signal import Signal, SignalDirection, AlertPayload
 from models.pattern import (
     Pattern,
     PatternKind,
     PatternStatus,
-    SwingPoint,
     SwingKind,
+    SwingPoint,
 )
+from models.signal import AlertPayload, Signal, SignalDirection
 
 __all__ = [
     "Candle",

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
+from contextlib import suppress
 from typing import Any
 
 from broker.angelone_client import AngelOneClient
@@ -121,9 +122,7 @@ class Application:
             self.config.indices[name].enabled = new_state
             # Re-subscribe WS with the new index set
             if self.market_service.ws is not None:
-                self.market_service.ws.set_subscriptions(
-                    self.market_service._build_subscriptions()
-                )
+                self.market_service.ws.set_subscriptions(self.market_service._build_subscriptions())
             # Start tracking candles for newly enabled indices
             if new_state:
                 self.candle_engine.track(name, self.config.timeframes.default)
@@ -181,11 +180,9 @@ class Application:
         loop = asyncio.get_running_loop()
 
         for sig in (signal.SIGINT, signal.SIGTERM):
-            try:
+            # Windows / non-main-thread can't install signal handlers.
+            with suppress(NotImplementedError, RuntimeError):
                 loop.add_signal_handler(sig, self._stop.set)
-            except (NotImplementedError, RuntimeError):
-                # Windows / non-main-thread
-                pass
 
         await self._stop.wait()
         await self.stop()

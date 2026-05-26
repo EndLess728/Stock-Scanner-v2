@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from engines.pattern_engine import register_detector
 from models.candle import CandleSeries
@@ -12,7 +12,7 @@ from utils.time_utils import now_ist
 
 
 @register_detector("w_pattern")
-def detect_w_pattern(series: CandleSeries, config: Dict[str, Any]) -> List[Pattern]:
+def detect_w_pattern(series: CandleSeries, config: dict[str, Any]) -> list[Pattern]:
     if not config.get("enabled", False):
         return []
     if len(series) < int(config.get("min_pattern_bars", 10)):

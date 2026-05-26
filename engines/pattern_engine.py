@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import Any
 
 from config.settings import AppConfig
 from engines.alert_engine import AlertEngine
@@ -23,12 +24,11 @@ from patterns.swing_detector import SwingDetector
 from utils.logger import log
 from utils.time_utils import now_ist
 
-
 # Pattern detector contract:
 #   detect(series: CandleSeries, config: dict) -> List[Pattern]
-PatternDetector = Callable[[CandleSeries, Dict[str, Any]], List[Pattern]]
+PatternDetector = Callable[[CandleSeries, dict[str, Any]], list[Pattern]]
 
-PATTERN_DETECTORS: Dict[str, PatternDetector] = {}
+PATTERN_DETECTORS: dict[str, PatternDetector] = {}
 
 
 def register_detector(name: str) -> Callable[[PatternDetector], PatternDetector]:
@@ -47,7 +47,7 @@ class PatternEngine:
     def __init__(self, config: AppConfig, alerts: AlertEngine) -> None:
         self.config = config
         self.alerts = alerts
-        self._series_cache: Dict[tuple[str, str], CandleSeries] = {}
+        self._series_cache: dict[tuple[str, str], CandleSeries] = {}
         self.swing_detector = SwingDetector(
             lookback=config.patterns.model_dump().get("swing", {}).get("lookback", 20),
             sensitivity=config.patterns.model_dump().get("swing", {}).get("sensitivity", 0.0015),
@@ -57,7 +57,7 @@ class PatternEngine:
     # Discovery
     # ------------------------------------------------------------------
     @staticmethod
-    def discover_patterns() -> Dict[str, PatternDetector]:
+    def discover_patterns() -> dict[str, PatternDetector]:
         import patterns as _pkg
 
         for _, modname, _ in pkgutil.iter_modules(_pkg.__path__):
@@ -124,7 +124,7 @@ class PatternEngine:
     # Helpers
     # ------------------------------------------------------------------
     @staticmethod
-    def _pattern_to_signal(pattern: Pattern) -> Optional[Signal]:
+    def _pattern_to_signal(pattern: Pattern) -> Signal | None:
         direction_meta = pattern.metadata.get("direction", "BUY").upper()
         try:
             direction = SignalDirection(direction_meta)

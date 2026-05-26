@@ -16,7 +16,6 @@ from telegram import Bot
 from telegram.constants import ParseMode
 from telegram.error import TelegramError
 
-
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()

@@ -6,7 +6,7 @@ than both shoulders. Neckline drawn through the two intervening highs.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from engines.pattern_engine import register_detector
 from models.candle import CandleSeries
@@ -18,8 +18,8 @@ from utils.time_utils import now_ist
 
 @register_detector("inverse_head_and_shoulders")
 def detect_inverse_head_and_shoulders(
-    series: CandleSeries, config: Dict[str, Any]
-) -> List[Pattern]:
+    series: CandleSeries, config: dict[str, Any]
+) -> list[Pattern]:
     if not config.get("enabled", False):
         return []
     min_bars = int(config.get("min_pattern_bars", 15))
@@ -40,7 +40,7 @@ def detect_inverse_head_and_shoulders(
     if last is None or not last.is_closed:
         return []
 
-    out: List[Pattern] = []
+    out: list[Pattern] = []
     for i in range(len(swings) - 5, len(swings) - 4):
         window = swings[i : i + 5]
         if [s.kind for s in window] != [

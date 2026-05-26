@@ -8,7 +8,7 @@ Identifies an anchor swing (last opposing swings) and reports:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from engines.pattern_engine import register_detector
 from models.candle import CandleSeries
@@ -18,12 +18,12 @@ from utils.time_utils import now_ist
 
 
 @register_detector("fibonacci")
-def detect_fibonacci(series: CandleSeries, config: Dict[str, Any]) -> List[Pattern]:
+def detect_fibonacci(series: CandleSeries, config: dict[str, Any]) -> list[Pattern]:
     if not config.get("enabled", False):
         return []
 
-    levels: List[float] = list(config.get("levels", [0.236, 0.382, 0.5, 0.618, 0.786]))
-    extensions: List[float] = list(config.get("extensions", [1.272, 1.618, 2.0]))
+    levels: list[float] = list(config.get("levels", [0.236, 0.382, 0.5, 0.618, 0.786]))
+    extensions: list[float] = list(config.get("extensions", [1.272, 1.618, 2.0]))
     tol = float(config.get("rejection_tolerance", 0.001))
 
     detector = SwingDetector(

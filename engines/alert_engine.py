@@ -10,14 +10,13 @@ Responsible for:
 from __future__ import annotations
 
 import asyncio
-from typing import Awaitable, Callable, Optional
+from collections.abc import Awaitable, Callable
 
 from config.settings import AppConfig
 from database.sqlite import Database
 from models.signal import AlertPayload, Signal, SignalDirection
 from utils.logger import log
 from utils.time_utils import now_ist
-
 
 # Telegram sender signature: send(chat_id, AlertPayload) -> awaitable
 TelegramSender = Callable[[int, AlertPayload], Awaitable[bool]]
@@ -41,7 +40,7 @@ class AlertEngine:
         self._minute_bucket = 0
         self._sent_this_minute = 0
 
-    def reload_config(self, config: AppConfig, chat_ids: Optional[list[int]] = None) -> None:
+    def reload_config(self, config: AppConfig, chat_ids: list[int] | None = None) -> None:
         self.config = config
         if chat_ids is not None:
             self.chat_ids = list(chat_ids)
@@ -139,7 +138,7 @@ class AlertEngine:
     async def notify(
         self,
         text: str,
-        dedup_key: Optional[str] = None,
+        dedup_key: str | None = None,
         parse_mode: str = "Markdown",
     ) -> bool:
         """Broadcast an informational message.
@@ -192,7 +191,7 @@ class AlertEngine:
             *[self.sender(chat_id, payload) for chat_id in self.chat_ids],
             return_exceptions=True,
         )
-        for chat, res in zip(self.chat_ids, results):
+        for chat, res in zip(self.chat_ids, results, strict=True):
             if isinstance(res, Exception):
                 log.error(f"Telegram send to {chat} failed: {res!r}")
             elif res is False:

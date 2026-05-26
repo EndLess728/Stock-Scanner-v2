@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import functools
-from typing import Any, Awaitable, Callable, Iterable, TypeVar
+from collections.abc import Awaitable, Callable, Iterable
+from typing import Any
 
-T = TypeVar("T")
 
-
-def chunked(iterable: Iterable[T], n: int) -> Iterable[list[T]]:
+def chunked[T](iterable: Iterable[T], n: int) -> Iterable[list[T]]:
     """Yield chunks of size `n` from `iterable`."""
     chunk: list[T] = []
     for item in iterable:
@@ -25,14 +24,14 @@ def safe_float(value: Any, default: float = 0.0) -> float:
     """Float-coerce best-effort."""
     try:
         return float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return default
 
 
 def safe_int(value: Any, default: int = 0) -> int:
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return default
 
 
@@ -62,7 +61,7 @@ def async_retry(
     """Simple exponential-backoff retry decorator for async callables."""
     from utils.logger import log
 
-    def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
+    def decorator[T](func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
             delay = base_delay

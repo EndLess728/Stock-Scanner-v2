@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class PatternKind(str, Enum):
+class PatternKind(StrEnum):
     HEAD_SHOULDERS = "HEAD_AND_SHOULDERS"
     INVERSE_HEAD_SHOULDERS = "INVERSE_HEAD_AND_SHOULDERS"
     M_PATTERN = "M_PATTERN"
@@ -18,7 +18,7 @@ class PatternKind(str, Enum):
     FIBONACCI = "FIBONACCI"
 
 
-class PatternStatus(str, Enum):
+class PatternStatus(StrEnum):
     FORMING = "FORMING"
     CONFIRMED = "CONFIRMED"
     INVALIDATED = "INVALIDATED"
@@ -26,7 +26,7 @@ class PatternStatus(str, Enum):
     RETEST = "RETEST"
 
 
-class SwingKind(str, Enum):
+class SwingKind(StrEnum):
     HIGH = "HIGH"
     LOW = "LOW"
 
@@ -47,12 +47,12 @@ class Pattern(BaseModel):
     symbol: str
     timeframe: str
     status: PatternStatus = PatternStatus.FORMING
-    swings: List[SwingPoint] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    swings: list[SwingPoint] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
-    confirmation_price: Optional[float] = None
-    invalidation_price: Optional[float] = None
+    confirmation_price: float | None = None
+    invalidation_price: float | None = None
 
 
 __all__ = [

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time, timedelta
-from typing import Tuple
 
 import pytz
 
@@ -29,9 +28,7 @@ def is_trading_day(day: date, trading_days: list[str], holidays: list[str]) -> b
     weekday_abbrev = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day.weekday()]
     if weekday_abbrev not in trading_days:
         return False
-    if day.isoformat() in holidays:
-        return False
-    return True
+    return day.isoformat() not in holidays
 
 
 def is_market_open(
@@ -87,7 +84,7 @@ def next_candle_close(moment: datetime, tf: str) -> datetime:
     return floor_to_timeframe(moment, tf) + timedelta(seconds=timeframe_to_seconds(tf))
 
 
-def candle_window(moment: datetime, tf: str) -> Tuple[datetime, datetime]:
+def candle_window(moment: datetime, tf: str) -> tuple[datetime, datetime]:
     """Return (open_ts, close_ts) for the candle that contains `moment`."""
     start = floor_to_timeframe(moment, tf)
     return start, start + timedelta(seconds=timeframe_to_seconds(tf))

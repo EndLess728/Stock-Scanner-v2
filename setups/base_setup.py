@@ -12,7 +12,7 @@ can discover and instantiate it without any core engine changes.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any
 
 from models.candle import Candle
 from models.signal import Signal
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from engines.state_engine import StateEngine
 
 
-SETUP_REGISTRY: Dict[str, Type["BaseSetup"]] = {}
+SETUP_REGISTRY: dict[str, type[BaseSetup]] = {}
 
 
 class BaseSetup(ABC):
@@ -45,7 +45,7 @@ class BaseSetup(ABC):
     def __init__(
         self,
         name: str,
-        config: Dict[str, Any],
+        config: dict[str, Any],
         state: StateEngine,
         alerts: AlertEngine,
     ) -> None:
@@ -58,10 +58,10 @@ class BaseSetup(ABC):
     # API
     # ------------------------------------------------------------------
     @abstractmethod
-    async def on_candle(self, symbol: str, candle: Candle) -> Optional[Signal]:
+    async def on_candle(self, symbol: str, candle: Candle) -> Signal | None:
         """Process a newly-closed candle. Return a Signal to fire an alert."""
 
-    async def on_tick(self, symbol: str, candle: Candle) -> Optional[Signal]:
+    async def on_tick(self, symbol: str, candle: Candle) -> Signal | None:
         """Process an in-progress candle (only invoked if `uses_ticks=True`)."""
         return None
 

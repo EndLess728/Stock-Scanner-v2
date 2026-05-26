@@ -10,6 +10,7 @@ The orchestrator injects these components into bot.bot_data:
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import Any
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -19,7 +20,6 @@ from telegram.ext import ContextTypes
 
 from config.settings import AppConfig
 from utils.logger import log
-
 
 # Callback-data scheme. Telegram caps callback_data at 64 bytes — short keys matter.
 #   tog:s:<setup_name>   — toggle a setup
@@ -43,7 +43,11 @@ def _build_setups_keyboard(cfg: AppConfig) -> InlineKeyboardMarkup:
     for name, scfg in cfg.setups.items():
         marker = "✅" if scfg.enabled else "⬜"
         rows.append(
-            [InlineKeyboardButton(f"{marker}  {name}", callback_data=f"{_CB_TOGGLE}:{_SCOPE_SETUP}:{name}")]
+            [
+                InlineKeyboardButton(
+                    f"{marker}  {name}", callback_data=f"{_CB_TOGGLE}:{_SCOPE_SETUP}:{name}"
+                )
+            ]
         )
     if not rows:
         rows.append([InlineKeyboardButton("(no setups configured)", callback_data=_CB_CLOSE)])
@@ -56,7 +60,11 @@ def _build_indices_keyboard(cfg: AppConfig) -> InlineKeyboardMarkup:
     for name, icfg in cfg.indices.items():
         marker = "✅" if icfg.enabled else "⬜"
         rows.append(
-            [InlineKeyboardButton(f"{marker}  {name}", callback_data=f"{_CB_TOGGLE}:{_SCOPE_INDEX}:{name}")]
+            [
+                InlineKeyboardButton(
+                    f"{marker}  {name}", callback_data=f"{_CB_TOGGLE}:{_SCOPE_INDEX}:{name}"
+                )
+            ]
         )
     if not rows:
         rows.append([InlineKeyboardButton("(no indices configured)", callback_data=_CB_CLOSE)])
@@ -226,10 +234,8 @@ async def on_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     if data == _CB_CLOSE:
         await query.answer()
-        try:
+        with suppress(BadRequest):
             await query.edit_message_text("Menu closed.")
-        except BadRequest:
-            pass
         return
 
     parts = data.split(":", 2)
@@ -238,7 +244,9 @@ async def on_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     scope_code, name = parts[1], parts[2]
-    scope = "setup" if scope_code == _SCOPE_SETUP else "index" if scope_code == _SCOPE_INDEX else None
+    scope = (
+        "setup" if scope_code == _SCOPE_SETUP else "index" if scope_code == _SCOPE_INDEX else None
+    )
     if scope is None:
         await query.answer("Unknown scope.")
         return
@@ -259,9 +267,7 @@ async def on_menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await query.answer(f"{name} {verb}")
 
     # Rebuild keyboard so the ✅/⬜ marker updates.
-    new_kb = (
-        _build_setups_keyboard(cfg) if scope == "setup" else _build_indices_keyboard(cfg)
-    )
+    new_kb = _build_setups_keyboard(cfg) if scope == "setup" else _build_indices_keyboard(cfg)
     try:
         await query.edit_message_reply_markup(reply_markup=new_kb)
     except BadRequest as exc:

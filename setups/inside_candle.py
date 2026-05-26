@@ -26,14 +26,13 @@ Rules:
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
 from models.candle import Candle
 from models.signal import Signal, SignalDirection
 from setups.base_setup import BaseSetup
 from utils.logger import log
 from utils.time_utils import IST, now_ist, timeframe_to_seconds
-
 
 # A candle older than this (from its close time) is considered a stale replay
 FRESH_WINDOW_SEC = 90
@@ -62,10 +61,10 @@ class InsideCandleSetup(BaseSetup):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    async def _get_state(self, symbol: str) -> Dict[str, Any]:
+    async def _get_state(self, symbol: str) -> dict[str, Any]:
         return await self.state.get(self.name, symbol)
 
-    async def _set_state(self, symbol: str, state: Dict[str, Any]) -> None:
+    async def _set_state(self, symbol: str, state: dict[str, Any]) -> None:
         await self.state.set(self.name, symbol, state)
 
     @staticmethod
@@ -92,7 +91,7 @@ class InsideCandleSetup(BaseSetup):
     # ------------------------------------------------------------------
     # Candle handler
     # ------------------------------------------------------------------
-    async def on_candle(self, symbol: str, candle: Candle) -> Optional[Signal]:
+    async def on_candle(self, symbol: str, candle: Candle) -> Signal | None:
         if not candle.is_closed:
             return None
 

@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger as log
 
 
 def setup_logger(
     level: str = "INFO",
-    log_file: Optional[str] = "logs/scanner.log",
+    log_file: str | None = "logs/scanner.log",
     rotation: str = "10 MB",
     retention: str = "14 days",
     backtrace: bool = True,

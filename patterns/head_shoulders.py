@@ -13,7 +13,7 @@ Validates:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from engines.pattern_engine import register_detector
 from models.candle import CandleSeries
@@ -24,7 +24,7 @@ from utils.time_utils import now_ist
 
 
 @register_detector("head_and_shoulders")
-def detect_head_and_shoulders(series: CandleSeries, config: Dict[str, Any]) -> List[Pattern]:
+def detect_head_and_shoulders(series: CandleSeries, config: dict[str, Any]) -> list[Pattern]:
     if not config.get("enabled", False):
         return []
     min_bars = int(config.get("min_pattern_bars", 15))
@@ -46,7 +46,7 @@ def detect_head_and_shoulders(series: CandleSeries, config: Dict[str, Any]) -> L
         return []
 
     # Walk last 5 swings looking for H-L-H-L-H sequence
-    out: List[Pattern] = []
+    out: list[Pattern] = []
     for i in range(len(swings) - 5, len(swings) - 4):
         window = swings[i : i + 5]
         if [s.kind for s in window] != [
